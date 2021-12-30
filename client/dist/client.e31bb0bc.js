@@ -5791,15 +5791,153 @@ var global = arguments[3];
 
 })));
 
+},{}],"animation.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Loading = void 0;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+var Loading = /*#__PURE__*/function () {
+  function Loading(container, div1, div2, div3, div4) {
+    _classCallCheck(this, Loading);
+
+    this.container = container;
+    this.div1 = div1;
+    this.div2 = div2;
+    this.div3 = div3;
+    this.div4 = div4;
+    this.id = null;
+  }
+
+  _createClass(Loading, [{
+    key: "animationStart",
+    value: function animationStart() {
+      this.container.style.height = '500px';
+      this.container.style.width = '500px';
+      this.container.style.padding = '10px';
+      this.container.style.display = 'flex';
+      this.container.style.justifyContent = 'center';
+      this.container.style.alignItems = 'center';
+      this.div1.style.width = '25px';
+      this.div1.style.height = '25px';
+      this.div1.style.background = 'rgba(0,0,0,0.5)';
+      this.div1.style.margin = '5px';
+      this.div1.style.borderRadius = '50%';
+      this.div2.style.width = '25px';
+      this.div2.style.height = '25px';
+      this.div2.style.background = 'rgba(0,0,0,0.5)';
+      this.div2.style.margin = '5px';
+      this.div2.style.borderRadius = '50%';
+      this.div3.style.width = '25px';
+      this.div3.style.height = '25px';
+      this.div3.style.background = 'rgba(0,0,0,0.5)';
+      this.div3.style.margin = '5px';
+      this.div3.style.borderRadius = '50%';
+      this.div4.style.width = '25px';
+      this.div4.style.height = '25px';
+      this.div4.style.background = 'rgba(0,0,0,0.5)';
+      this.div4.style.margin = '5px';
+      this.div4.style.borderRadius = '50%';
+      var i = 0;
+      var divs = [this.div1, this.div2, this.div3, this.div4];
+      this.id = setInterval(frame, 700);
+      var n = 0;
+
+      function frame() {
+        console.log(n);
+        var k = 0;
+        var asa = setInterval(smooth, 30);
+
+        function smooth() {
+          divs[i].style.background = 'rgba(0,0,0,0.8)';
+
+          if (k < 13) {
+            divs[i].style.height = 25 + k + 'px';
+            divs[i].style.width = 25 + k + 'px';
+
+            if (i === 0) {
+              divs[divs.length - 1].style.height = 38 - k + 'px';
+              divs[divs.length - 1].style.width = 38 - k + 'px';
+              divs[divs.length - 1].style.background = 'rgba(0,0,0,0.5)';
+            } else if (i > 0) {
+              divs[i - 1].style.height = 38 - k + 'px';
+              divs[i - 1].style.width = 38 - k + 'px';
+              divs[i - 1].style.background = 'rgba(0,0,0,0.5)';
+            }
+
+            k += 1;
+          } else {
+            clearInterval(asa);
+          }
+
+          n = 1;
+        }
+
+        if (n === 1) {
+          if (i < divs.length - 1) {
+            i += 1;
+          } else {
+            i = 0;
+          }
+        }
+      }
+
+      return 'Uspesno';
+    }
+  }, {
+    key: "animationEnd",
+    value: function animationEnd() {
+      this.container.style.display = 'none';
+    }
+  }]);
+
+  return Loading;
+}();
+
+exports.Loading = Loading;
 },{}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _moment = _interopRequireDefault(require("moment"));
 
+var _animation = require("./animation.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var main = document.getElementById('main');
-var exampleSocket = new WebSocket('ws://127.0.0.1:5000');
+var con = document.createElement('div');
+var d1 = document.createElement('div');
+var d2 = document.createElement('div');
+var d3 = document.createElement('div');
+var d4 = document.createElement('div');
+con.appendChild(d1);
+con.appendChild(d2);
+con.appendChild(d3);
+con.appendChild(d4);
+main.appendChild(con);
+var a = new _animation.Loading(con, d1, d2, d3, d4);
+a.animationStart();
+var exampleSocket = new WebSocket('ws://192.168.1.25:5000');
+var count = 0;
+
+window.onscroll = function () {
+  var distanceScrolled = document.documentElement.scrollTop;
+
+  if (distanceScrolled > 1000 && count === 0) {
+    var btnTop = document.createElement('button');
+    btnTop.innerHTML = 'ASA';
+    main.insertBefore(btnTop, main.childNodes[0]);
+    count++;
+  }
+};
 
 exampleSocket.onopen = function (event) {
   exampleSocket.send('get_feed');
@@ -5812,22 +5950,36 @@ function send_msg() {
 function create_article(data, where) {
   var article = document.createElement('article');
   article.className = 'article';
+  var link = document.createElement('a');
+  link.href = data.link;
+  link.target = '_blank';
+  article.appendChild(link);
   var title = document.createElement('h1');
   title.className = 'title';
-  var time = document.createElement('p');
-  var image_container = document.createElement('div');
-  image_container.className = 'image-container';
-  var image = document.createElement('img');
-
-  var formated_time = _moment.default.unix(data.published_at).format('dddd, MMMM Do YYYY, h:mm:ss a');
-
   title.innerHTML = data.title;
+  link.appendChild(title);
+  var time = document.createElement('p');
+
+  var formated_time = _moment.default.unix(data.published_at).format('dddd, MMMM Do YYYY, h:mm:ss a'); // let formated_time = data.published_at;
+
+
+  time.className = 'time';
   time.innerHTML = formated_time;
-  image.src = data.image;
-  image_container.appendChild(image);
-  article.appendChild(title);
   article.appendChild(time);
-  article.appendChild(image_container);
+
+  if (data.image) {
+    var image_container = document.createElement('div');
+    image_container.className = 'image-container';
+    var image = document.createElement('img');
+    image.src = data.image;
+    image_container.appendChild(image);
+    article.appendChild(image_container);
+  }
+
+  var desc = document.createElement('p');
+  desc.innerHTML = data.description;
+  desc.className = 'desc';
+  article.appendChild(desc);
 
   if (where === 'after') {
     main.appendChild(article);
@@ -5844,6 +5996,8 @@ exampleSocket.onmessage = function (event) {
       var data = JSON.parse(reader.result);
 
       if (data[0].code === 'feed') {
+        a.animationEnd();
+
         for (var i = 0; i < data[1].length; i++) {
           create_article(data[1][i], 'after');
         }
@@ -5853,13 +6007,9 @@ exampleSocket.onmessage = function (event) {
     };
 
     reader.readAsText(event.data);
-  } else {
-    var asa = document.createElement('h2');
-    asa.innerHTML = event.data;
-    main.insertBefore(asa, main.childNodes[0]);
   }
 };
-},{"moment":"node_modules/moment/moment.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"moment":"node_modules/moment/moment.js","./animation.js":"animation.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -5887,7 +6037,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "32943" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "43793" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
