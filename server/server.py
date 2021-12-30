@@ -6,32 +6,46 @@ import sys
 from rss_parser import RSSFeed
 
 PORT = 5000
+SERVER_URL = '192.168.1.25'
+
 # URL = ['https://rss.nytimes.com/services/xml/rss/nyt/World.xml']
 URL = ['https://www.blic.rs/rss/danasnje-vesti', 'https://informer.rs/rss/danasnje-vesti', 'https://www.kurir.rs/rss']
 # URL = ['https://informer.rs/rss/danasnje-vesti']
 
 print('Server listening on PORT: ' + str(PORT))
 
-conected = set()
+connected = set()
+
+def disconn():
+    print('User disconnected!')
+    print('Users connected: ' + str(len(connected)))
 
 async def start(websocket, path):
     print('A client just connected')
-    # async for message in websocket:
-    conected.add(websocket)
+    connected.add(websocket)
+    print(websocket.remote_address)
+    print('Users connected: ' + str(len(connected)))
     feed = RSSFeed(URL)
     async for message in websocket:
         print(message)
-        if message == 'get_feed':
-            msg = feed.return_data(0)
-            data = [{'code':'feed'}, msg]
-            response = json.dumps(data)
-            await websocket.send(response.encode())
-            task = asyncio.create_task(check_new(websocket, feed, msg[0]))
-
+        try:
+            if message == 'get_feed':
+                msg = feed.return_data(0)
+                data = [{'code':'feed'}, msg]
+                response = json.dumps(data)
+                await websocket.send(response.encode())
+                task_new_msg = asyncio.create_task(check_new(websocket, feed, msg[0]))
+                task_check_connection = asyncio.create_task(check_connection(websocket))
+        except websockets.exceptions.ConnectionClosedOK:
+            connected.remove(websocket)
+            disconn()
+        except websockets.exceptions.ConnectionClosedError:
+            connected.remove(websocket)
+            disconn()
 
 async def check_new(websocket, feed, last):
     while True:
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(5)
         newest_msg = feed.return_data(0)
         if newest_msg[0]['published_at'] != last['published_at']:
             data = [{'code':'new_msg'}, newest_msg[0]]
@@ -39,8 +53,23 @@ async def check_new(websocket, feed, last):
             last = newest_msg[0]
             await  websocket.send(response.encode())
 
+async def check_connection(websocket):
+    while True:
+        await asyncio.sleep(0.5)
+        try:
+            data = [{'code':'check_conn'}, 'alive']
+            response = json.dumps(data)
+            await websocket.send(response.encode())
+        except websockets.exceptions.ConnectionClosedOK:
+            connected.remove(websocket)
+            disconn()
+            break
+        except websockets.exceptions.ConnectionClosedError:
+            connected.remove(websocket)
+            disconn()
+            break
 
-start_server = websockets.serve(start, '127.0.0.1', PORT)
+start_server = websockets.serve(start, SERVER_URL , PORT)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

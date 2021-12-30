@@ -1,4 +1,4 @@
 node_modules
 __pycache__
-dev
-.cache
+client/dev
+client/.cache

@@ -11,25 +11,31 @@ class RSSFeed:
         self.url = url
         self.title = None
 
-    def get_data(self):
+    def get_data(self, url):
         data = list()
-        recived = list()
         feed = list()
-        for u in self.url:
-            r = requests.get(u)
-            lines = r.text.split()
-            feed = [l for l in lines]
+        r = requests.get(url)
+        feed = r.text.split()
 
         item_index = [i for i in range(0, len(feed)) if feed[i] == '<item>']
+
         for i in range(0, len(item_index) - 1):
             b = self.get_items(item_index[i], item_index[i+1], feed)
             data.append(b)
-            data = sorted(data, key=lambda k: k['published_at'], reverse=True)
+
+        return data
+
+    def get_all_data(self):
+        data = list()
+        for u in self.url:
+            data += self.get_data(u)
 
         return data
 
     def return_data(self, start_i):
-        data = self.get_data()
+        data = self.get_all_data()
+        data = sorted(data, key=lambda k: k['published_at'], reverse=True)
+
         if start_i + 20 > len(data):
             return data[start_i:]
         else:
@@ -104,7 +110,6 @@ class RSSFeed:
             image = temp1[0][:-1]
         else:
             image = temp[1]
-
 
         return image.replace('"', '')
 
