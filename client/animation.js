@@ -49,7 +49,6 @@ export class Loading {
 
     let n = 0;
     function frame() {
-      console.log(n);
       let k = 0;
       let asa = setInterval(smooth, 30);
       function smooth() {
@@ -87,6 +86,7 @@ export class Loading {
 
   animationEnd() {
     this.container.style.display = 'none';
+    clearInterval(this.id);
   }
 
 

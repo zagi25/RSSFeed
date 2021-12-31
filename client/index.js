@@ -1,101 +1,61 @@
-import moment from 'moment';
-import {Loading} from './animation.js';
+const header = document.getElementById('home-header');
+const main = document.getElementById('home-page');
+const input = document.getElementById('link-text');
+const container = document.getElementById('links-cont');
+const addBtn = document.getElementById('add-btn');
+const saveBtn = document.getElementById('save-btn');
 
-const main = document.getElementById('main');
-const con = document.createElement('div');
-const d1 = document.createElement('div');
-const d2 = document.createElement('div');
-const d3 = document.createElement('div');
-const d4 = document.createElement('div');
-con.appendChild(d1);
-con.appendChild(d2);
-con.appendChild(d3);
-con.appendChild(d4);
-main.appendChild(con);
+addBtn.addEventListener('click', addLink);
+container.addEventListener('click', deleteLink);
+saveBtn.addEventListener('click', saveLinks);
 
-let a = new Loading(con, d1, d2, d3, d4);
+let links = [];
+let storage = window.localStorage;
 
-a.animationStart()
+header.style.display = 'none';
+main.style.display = 'none';
 
 
-var exampleSocket = new WebSocket('ws://192.168.1.25:5000');
+if(storage.length > 0){
+  window.location.href = './feed.html';
+}else{
+  header.style.display = 'flex';
+  main.style.display = 'flex';
+}
 
-let count = 0;
 
-window.onscroll = function() {
-  let distanceScrolled = document.documentElement.scrollTop;
-  if(distanceScrolled > 1000 && count === 0){
-    let btnTop = document.createElement('button');
-    btnTop.innerHTML = 'ASA';
-    main.insertBefore(btnTop, main.childNodes[0]);
-    count++;
+function addLink () {
+  let one_link = document.createElement('div');
+  let link = document.createElement('p');
+  let deleteI = document.createElement('i');
+  one_link.className='one-link';
+  link.innerHTML = input.value;
+  links.push(input.value);
+  console.log(links);
+  deleteI.className = 'far fa-trash-alt';
+  one_link.appendChild(link);
+  one_link.appendChild(deleteI);
+  one_link.id = container.children.length;
+  container.appendChild(one_link);
+  input.value = '';
+  saveBtn.style.display = 'block';
+}
+
+function deleteLink (e) {
+  if(e.target.tagName === 'I'){
+    let value = e.target.parentNode.childNodes[0].textContent;
+    let index = links.indexOf(value);
+    links.splice(index,1);
+    e.target.parentElement.remove();
+    if(container.children.length === 0){
+      saveBtn.style.display = 'none';
+    }
   }
 }
 
-exampleSocket.onopen = function (event) {
-  exampleSocket.send('get_feed');
-};
-
-function send_msg () {
-  exampleSocket.send('caos');
-}
-
-function create_article (data, where) {
-  let article = document.createElement('article')
-  article.className = 'article';
-
-  let link = document.createElement('a');
-  link.href = data.link;
-  link.target = '_blank';
-  article.appendChild(link);
-
-  let title = document.createElement('h1');
-  title.className = 'title';
-  title.innerHTML = data.title;
-  link.appendChild(title);
-
-  let time = document.createElement('p');
-  let formated_time = moment.unix(data.published_at).format('dddd, MMMM Do YYYY, h:mm:ss a');
-  // let formated_time = data.published_at;
-  time.className = 'time';
-  time.innerHTML = formated_time;
-  article.appendChild(time);
-
-  if(data.image){
-    let image_container = document.createElement('div');
-    image_container.className = 'image-container';
-    let image = document.createElement('img');
-    image.src = data.image;
-    image_container.appendChild(image);
-    article.appendChild(image_container);
+function saveLinks () {
+  for(let i = 0; i < links.length; i++){
+    localStorage.setItem(`link${i}`, links[i]);
   }
-
-  let desc = document.createElement('p');
-  desc.innerHTML = data.description;
-  desc.className= 'desc';
-  article.appendChild(desc);
-
-  if(where === 'after'){
-    main.appendChild(article);
-  }else if(where === 'before'){
-    main.insertBefore(article, main.childNodes[0]);
-  }
-}
-
-exampleSocket.onmessage = function (event) {
-  if(event.data instanceof Blob) {
-    let reader = new FileReader();
-    reader.onload = function () {
-      const data = JSON.parse(reader.result);
-      if(data[0].code === 'feed'){
-        a.animationEnd();
-        for(let i = 0; i < data[1].length; i++){
-          create_article(data[1][i], 'after');
-        }
-      }else if(data[0].code === 'new_msg'){
-        create_article(data[1], 'before');
-      }
-    };
-    reader.readAsText(event.data);
-  }
+  window.location.href = './feed.html';
 }

@@ -25,17 +25,26 @@ async def start(websocket, path):
     connected.add(websocket)
     print(websocket.remote_address)
     print('Users connected: ' + str(len(connected)))
-    feed = RSSFeed(URL)
     async for message in websocket:
         print(message)
+        recived_message = json.loads(message)
         try:
-            if message == 'get_feed':
-                msg = feed.return_data(0)
-                data = [{'code':'feed'}, msg]
+            if recived_message['code'] == 'get_feed':
+                url = list()
+                for key,value in recived_message['data'].items():
+                    url.append(value)
+                feed = RSSFeed(url)
+                msg = feed.get_all_data()
+                data = [{'code':'feed'}, msg[:20]]
                 response = json.dumps(data)
                 await websocket.send(response.encode())
                 task_new_msg = asyncio.create_task(check_new(websocket, feed, msg[0]))
-                task_check_connection = asyncio.create_task(check_connection(websocket))
+                # task_check_connection = asyncio.create_task(check_connection(websocket))
+            elif recived_message['code'] == 'get_more_feed':
+                # msg = feed.return_data(recived_message['data'])
+                data = [{'code':'more_feed'}, msg[recived_message['data']:recived_message['data'] + 20]]
+                response = json.dumps(data)
+                await websocket.send(response.encode())
         except websockets.exceptions.ConnectionClosedOK:
             connected.remove(websocket)
             disconn()
@@ -47,11 +56,18 @@ async def check_new(websocket, feed, last):
     while True:
         await asyncio.sleep(5)
         newest_msg = feed.return_data(0)
-        if newest_msg[0]['published_at'] != last['published_at']:
+        if newest_msg[0]['data']['published_at'] != last['data']['published_at']:
             data = [{'code':'new_msg'}, newest_msg[0]]
             response = json.dumps(data)
             last = newest_msg[0]
-            await  websocket.send(response.encode())
+            try:
+                await  websocket.send(response.encode())
+            except websockets.exceptions.ConnectionClosedOK:
+                connected.remove(websocket)
+                disconn()
+            except websockets.exceptions.ConnectionClosedError:
+                connected.remove(websocket)
+                discon()
 
 async def check_connection(websocket):
     while True:

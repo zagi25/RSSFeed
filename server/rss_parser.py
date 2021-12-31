@@ -27,14 +27,23 @@ class RSSFeed:
 
     def get_all_data(self):
         data = list()
+        all_data = list()
         for u in self.url:
             data += self.get_data(u)
 
-        return data
+        data = sorted(data, key=lambda k: k['published_at'], reverse=True)
+
+        for i in range(0, len(data)):
+            article = dict()
+            article['id'] = i
+            article['data'] = data[i]
+            all_data.append(article)
+
+
+        return all_data
 
     def return_data(self, start_i):
         data = self.get_all_data()
-        data = sorted(data, key=lambda k: k['published_at'], reverse=True)
 
         if start_i + 20 > len(data):
             return data[start_i:]

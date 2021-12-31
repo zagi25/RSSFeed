@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans&display=swap');
+
+:root {
+	--box-shadow: 2px 2px 2px rgba(0,0,0,0.2);
+	--clr-txt: #0a0a2d;
+}
 
 *,
 ::after,
@@ -12,6 +18,10 @@ html {
 }
 
 body {
+	font-family:'Work Sans', sans-serif;
+	background: #c7f9fc;
+	/* background: white; */
+	letter-spacing: 0.5px;
 }
 
 a {
@@ -19,11 +29,121 @@ a {
 	color: black;
 }
 
+.btn {
+	padding: 0.6rem 2rem 0.6rem 2rem;
+	font-size: 1.2rem;
+	cursor: pointer;
+}
+
+.home-header {
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+	display: flex;
+	justify-content: center;
+}
+
+.home-header > h1 {
+	color: var(--clr-txt);
+}
+
+.home-page {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.home-page > h2 {
+	margin-bottom: 1.5rem;
+	color: var(--clr-txt);
+}
+
+.input-form {
+	background: white;
+	border-radius: 0.25rem;
+	padding: 0.5rem;
+	width: 35rem;
+	display: flex;
+	align-items: center;
+	box-shadow: var(--box-shadow);
+}
+
+.input-form > input {
+	color: var(--clr-txt);
+	border: none;
+	border-radius: 0.25rem;
+	width: 100%;
+	margin-right: 0.5rem;
+	font-size: 1.5rem;
+	outline: none;
+}
+
+.input-form > i {
+	color: #07f499;
+	font-size: 2rem;
+	cursor: pointer;
+}
+
+.input-form > i:hover {
+	transform: scale(1.1);
+}
+
+.links-container {
+	margin-top: 0.5rem;
+	width: 35rem;
+}
+
+.one-link {
+	background: white;
+	padding: 0.5rem;
+	border-radius: 0.25rem;
+	margin-top: 0.5rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	box-shadow: var(--box-shadow);
+}
+
+.one-link > p {
+	font-size: 1.5rem;
+	color: var(--clr-txt);
+}
+
+.one-link > i {
+	color: red;
+	cursor: pointer;
+}
+
+.one-link > i:hover {
+	transform: scale(1.1);
+}
+
+.save-btn {
+	margin-top: 1rem;
+	color: white;
+	background: #07f499;
+	border: none;
+	border-radius: 0.25rem;
+	box-shadow: var(--box-shadow);
+	transition: transform 0.1s ease-in;
+}
+
+.save-btn:hover {
+	transform: scale(1.1);
+}
+
 #main {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+}
+
+.btnTop {
+	position: fixed;
+	right: 2rem;
+	bottom: 2rem;
+	cursor: pointer;
 }
 
 .article {
