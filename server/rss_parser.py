@@ -2,6 +2,7 @@ import requests
 import re
 import datetime
 import time
+import sys
 from time import strptime
 
 
@@ -15,9 +16,10 @@ class RSSFeed:
         data = list()
         feed = list()
         r = requests.get(url)
-        feed = r.text.split()
+        feed = re.split('<|>', r.text)
+        feed = [ e for e in feed if e.strip()]
 
-        item_index = [i for i in range(0, len(feed)) if feed[i] == '<item>']
+        item_index = [i for i in range(0, len(feed)) if feed[i] == 'item']
 
         for i in range(0, len(item_index) - 1):
             b = self.get_items(item_index[i], item_index[i+1], feed)
@@ -39,7 +41,6 @@ class RSSFeed:
             article['data'] = data[i]
             all_data.append(article)
 
-
         return all_data
 
     def return_data(self, start_i):
@@ -53,72 +54,104 @@ class RSSFeed:
     def get_items(self, i, i_end, data):
         index = int()
         fres = dict()
+        fres['image']=''
         res = list()
         sliced_data = data[i:i_end]
-        res.append(sliced_data)
         for i in range(0, len(sliced_data)):
-            if '<title>' in sliced_data[i]:
+            if 'title' == sliced_data[i]:
                 fres['title'] = self.get_title(sliced_data, i)
-            elif '<link>' in sliced_data[i]:
+            elif 'link' == sliced_data[i]:
                 fres['link'] = self.get_link(sliced_data, i)
-            elif '<description>' in sliced_data[i]:
-                fres['description'] = self.get_desc(sliced_data, i)
-            elif '<pubDate>' in sliced_data[i]:
+            elif 'description' == sliced_data[i]:
+                desc_img = self.get_desc(sliced_data, i)
+                if len(desc_img) == 1:
+                    fres['desc'] = desc_img[0]
+                elif len(desc_img) == 2:
+                    fres['desc'] = desc_img[0]
+                    fres['image'] = desc_img[1]
+            elif 'pubDate' == sliced_data[i]:
                 fres['published_at'] = self.get_pub_date(sliced_data, i)
             elif 'src=' in sliced_data[i]:
-                fres['image'] = self.get_image(sliced_data, i)
+                if not fres['image']:
+                    fres['image'] = self.get_image(sliced_data, i)
 
         return fres
 
-    def get_title(self, data, index):
-        title_section = self.get_section(index, data, '</title>')
-        temp = re.split('<title>|</title>|\[|\]|CDATA|<!|>', ' '.join(title_section))
-        title = [e for e in temp if e.strip()]
 
-        return title[0]
+    def get_title(self, data, index):
+        title_section = self.get_section(index, data, '/title')
+        temp = re.split('title|/title|\[|\]|CDATA', ' '.join(title_section))
+        temp1 = [e.strip() for e in temp if e.strip()]
+        title = [e for e in temp1 if e != '!']
+
+        return ''.join(title)
+
 
     def get_link(self, data, index):
-        link = list()
-        link = re.split('<link>|</link>',data[index])
+        link_section = self.get_section(index, data, '/link')
+        temp1 = re.split('link|/link',' '.join(link_section))
+        temp2 = [e.strip() for e in temp1 if e.strip()]
+        link = ''.join(temp2)
 
-        return link[1]
+        return link
+
 
     def get_desc(self, data, index):
-        desc_section = self.get_section(index, data, '</description>')
-
-        temp = re.split('<description>|</description>|\[|\]|CDATA|<!|>', ' '.join(desc_section))
-        desc = [ e for e in temp if e.strip()]
-        if desc:
-            if '<img src' in desc[0]:
-                return None
+        desc_section = self.get_section(index, data, '/description')
+        temp_image = list()
+        temp_desc = list()
+        for section in desc_section:
+            if 'src=' in section:
+                temp_image.append(section)
             else:
-                return desc[0]
+                temp_desc.append(section)
+
+        temp1_desc = re.split('description|/description|\[|\]|CDATA|!', ' '.join(temp_desc))
+
+        temp2_desc = [ e.strip() for e in temp1_desc if e.strip()]
+        temp3_desc = ''.join(temp2_desc).split()
+        temp4_desc = list()
+        for i in temp3_desc:
+            if i != 'br' and i !='/' and i != 'p' and i != '/p':
+                temp4_desc.append(i)
+        desc = ' '.join(temp4_desc)
+
+        if temp_image:
+            temp1_image = ''.join(temp_image).split()
+            temp2_image = [image.split('=', 1) for image in temp1_image if 'src=' in image]
+            image = temp2_image[0][1].replace('"', '')
+
+            return [desc, image]
+        else:
+            return [desc]
+
 
     def get_pub_date(self, data, index):
-        pub_section = self.get_section(index, data, '</pubDate>')
+        pub_section = self.get_section(index, data, '/pubDate')
 
-        temp = re.split('<pubDate>|</pubDate>', ' '.join(pub_section))
-        temp1 = [e for e in temp if e.strip()]
-        dt = temp1[0].split()
-        year = dt[3]
-        month_str = dt[2]
-        month = strptime(month_str, '%b').tm_mon
-        day = dt[1]
-        time = dt[4].split(':')
-        hour = time[0]
-        minute = time[1]
-        second = time[2]
-        date = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second)).strftime('%s')
+        temp = re.split('pubDate|/pubDate', ' '.join(pub_section))
+        try:
+            temp1 = [e for e in temp if e.strip()]
+            temp1 = temp1[0].strip()
+            dt = temp1.split()
+            year = dt[3]
+            month_str = dt[2]
+            month = strptime(month_str, '%b').tm_mon
+            day = dt[1]
+            time = dt[4].split(':')
+            hour = time[0]
+            minute = time[1]
+            second = time[2]
+            date = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second)).strftime('%s')
+            return date
+        except:
+            return []
 
-        return date
 
     def get_image(self, data, index):
         temp = data[index].split('=')
-        if '>' in temp[1]:
-            temp1 = temp[1].split('>')
-            image = temp1[0][:-1]
-        else:
-            image = temp[1]
+        temp1 = temp[1].split()
+        image = ''.join(temp1[0])
 
         return image.replace('"', '')
 

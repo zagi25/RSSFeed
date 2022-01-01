@@ -19,7 +19,8 @@ html {
 
 body {
 	font-family:'Work Sans', sans-serif;
-	background: #c7f9fc;
+	background:#e0e0e0;
+	/* background: red; */
 	/* background: white; */
 	letter-spacing: 0.5px;
 }
@@ -118,7 +119,7 @@ a {
 	transform: scale(1.1);
 }
 
-.save-btn {
+.feed-btn {
 	margin-top: 1rem;
 	color: white;
 	background: #07f499;
@@ -128,7 +129,7 @@ a {
 	transition: transform 0.1s ease-in;
 }
 
-.save-btn:hover {
+.feed-btn:hover {
 	transform: scale(1.1);
 }
 
