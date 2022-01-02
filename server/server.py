@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 import websockets
+import os
 import asyncio
 import json
 import sys
 from rss_parser import RSSFeed
 
-PORT = 5000
-SERVER_URL = '192.168.1.25'
+# PORT = 5000
+SERVER_URL = '0.0.0.0'
 
-# URL = ['https://rss.nytimes.com/services/xml/rss/nyt/World.xml']
-URL = ['https://www.blic.rs/rss/danasnje-vesti', 'https://informer.rs/rss/danasnje-vesti', 'https://www.kurir.rs/rss']
-# URL = ['https://informer.rs/rss/danasnje-vesti']
+# HOST = socket.gethostbyname(socket.gethostname())
+PORT = int(os.environ.get("PORT", 5000))
 
 print('Server listening on PORT: ' + str(PORT))
 
@@ -28,7 +28,6 @@ async def start(websocket, path):
     msg = list()
     try:
         async for message in websocket:
-            print(message)
             recived_message = json.loads(message)
             if recived_message['code'] == 'get_feed':
                 url = list()
@@ -40,10 +39,8 @@ async def start(websocket, path):
                 response = json.dumps(data)
                 await websocket.send(response.encode())
                 task_new_msg = asyncio.create_task(check_new(websocket, feed, msg[0]))
-
-                # task_check_connection = asyncio.create_task(check_connection(websocket))
+                task_check_connection = asyncio.create_task(check_connection(websocket))
             elif recived_message['code'] == 'get_more_feed':
-                # msg = feed.return_data(recived_message['data'])
                 data = [{'code':'more_feed'}, msg[recived_message['data']:recived_message['data'] + 20]]
                 response = json.dumps(data)
                 await websocket.send(response.encode())
@@ -78,18 +75,21 @@ async def check_new(websocket, feed, last):
 
 async def check_connection(websocket):
     while True:
-        await asyncio.sleep(0.5)
-        try:
-            data = [{'code':'check_conn'}, 'alive']
-            response = json.dumps(data)
-            await websocket.send(response.encode())
-        except websockets.exceptions.ConnectionClosedOK:
-            connected.remove(websocket)
-            disconn()
-            break
-        except websockets.exceptions.ConnectionClosedError:
-            connected.remove(websocket)
-            disconn()
+        await asyncio.sleep(5)
+        if websocket in connected:
+            try:
+                data = [{'code':'check_conn'}, 'alive']
+                response = json.dumps(data)
+                await websocket.send(response.encode())
+            except websockets.exceptions.ConnectionClosedOK:
+                connected.remove(websocket)
+                disconn()
+                break
+            except websockets.exceptions.ConnectionClosedError:
+                connected.remove(websocket)
+                disconn()
+                break
+        else:
             break
 
 start_server = websockets.serve(start, SERVER_URL , PORT)

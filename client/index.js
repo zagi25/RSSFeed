@@ -1,4 +1,3 @@
-// import moment from './moment';
 import {Loading} from './animation.js';
 
 const main = document.getElementById('main');
@@ -19,7 +18,7 @@ main.appendChild(con);
 let a = new Loading(con, d1, d2, d3, d4);
 a.animationStart()
 
-var exampleSocket = new WebSocket('ws://192.168.1.25:5000');
+var exampleSocket = new WebSocket('wss://rssfeed-websocket-server.herokuapp.com');
 
 let scrollCount = 0;
 let observer;
@@ -61,6 +60,8 @@ exampleSocket.onopen = function (event) {
 };
 
 function create_article (data, where, index, length) {
+  let no_more = false;
+
   let article = document.createElement('article')
   article.className = 'article';
   article.id = data.id;
@@ -106,14 +107,18 @@ function create_article (data, where, index, length) {
     }
   }else if(length < 20){
     if(index === length - 1){
-      let no_more = document.createElement('h1');
-      no_more.innerHTML = 'No more news';
-      article.appendChild(no_more);
+      no_more = true;
     }
   }
 
   if(where === 'after'){
     main.appendChild(article);
+    if(no_more){
+      let no_more_news = document.createElement('h1');
+      no_more_news.innerHTML = 'No more news';
+      no_more_news.className = 'no-news';
+      main.appendChild(no_more_news);
+    }
   }else if(where === 'before'){
     main.insertBefore(article, main.childNodes[0]);
   }

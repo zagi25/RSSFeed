@@ -30,31 +30,35 @@ a {
 	color: black;
 }
 
+a:hover {
+	color:#07003d;
+}
+
 .btn {
 	padding: 0.6rem 2rem 0.6rem 2rem;
 	font-size: 1.2rem;
 	cursor: pointer;
 }
 
-.home-header {
+.settings-header {
 	margin-top: 2rem;
 	margin-bottom: 2rem;
 	display: flex;
 	justify-content: center;
 }
 
-.home-header > h1 {
+.settings-header > h1 {
 	color: var(--clr-txt);
 }
 
-.home-page {
+.settings-page {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 }
 
-.home-page > h2 {
+.settings-page > h2 {
 	margin-bottom: 1.5rem;
 	color: var(--clr-txt);
 }
@@ -107,6 +111,7 @@ a {
 
 .one-link > p {
 	font-size: 1.5rem;
+	word-break: break-word;
 	color: var(--clr-txt);
 }
 
@@ -122,7 +127,9 @@ a {
 .feed-btn {
 	margin-top: 1rem;
 	color: white;
-	background: #07f499;
+	/* background: #07f499; */
+	background: black;
+	font-weight: 700;
 	border: none;
 	border-radius: 0.25rem;
 	box-shadow: var(--box-shadow);
@@ -130,6 +137,27 @@ a {
 }
 
 .feed-btn:hover {
+	transform: scale(1.1);
+}
+
+.feed-header {
+	margin-top: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+}
+
+.settBtn {
+	font-size: 1.5rem;
+	cursor: pointer;
+	transition: transform 0.1s ease-in;
+	position: absolute;
+	right: 2rem;
+	top: 20%;
+}
+
+.settBtn:hover {
 	transform: scale(1.1);
 }
 
@@ -145,11 +173,22 @@ a {
 	right: 2rem;
 	bottom: 2rem;
 	cursor: pointer;
+	font-size: 2.5rem;
+	transition: transform 0.1s ease-in;
 }
 
+.btnTop:hover {
+	transform: scale(1.1);
+}
+
+
 .article {
+	background: white;
+	padding: 0.7rem;
+	border-radius: 0.25rem;
 	width: 50%;
-	margin: 2rem;
+	margin-top: 1rem;
+	box-shadow: var(--box-shadow);
 }
 
 .title {
@@ -181,9 +220,43 @@ a {
 	margin-top: 0.5rem;
 }
 
+.no-news {
+	margin: 1rem;
+	color: rgba(0,0,0,0.3);
+}
+
+@media screen and (max-width: 1000px){
+	.article {
+		width: 70%;
+	}
+}
+
 @media screen and (max-width: 600px){
+	.settBtn{
+		float: right;
+		margin-bottom: 2rem;
+		margin-top: 0rem;
+	}
+
+	.settings-header {
+		text-align: center;
+	}
+
 	.article {
 		width: 95%;
+	}
+
+	.input-form {
+		width: 90%;
+	}
+
+	.links-container {
+		width: 90%;
+	}
+
+	.btnTop {
+		bottom: 1rem;
+		right: 1rem;
 	}
 }
 

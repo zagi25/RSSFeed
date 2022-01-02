@@ -1,5 +1,5 @@
-const header = document.getElementById('home-header');
-const main = document.getElementById('home-page');
+const header = document.getElementById('settings-header');
+const main = document.getElementById('settings-page');
 const input = document.getElementById('link-text');
 const container = document.getElementById('links-cont');
 const addBtn = document.getElementById('add-btn');
